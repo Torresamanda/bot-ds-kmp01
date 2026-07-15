@@ -1,9 +1,19 @@
+import { Events } from "discord.js";
 import { loadEnvironment } from "./config/environment.js";
+import { createDiscordClient } from "./infrastructure/discord/discord-client.js";
 
-function bootstrap(): void {
-  loadEnvironment();
+async function bootstrap(): Promise<void> {
+  const environment = loadEnvironment();
+  const client = createDiscordClient();
 
-  console.log("KMP-01: núcleo de inicialização validado.");
+  client.once(Events.ClientReady, (readyClient) => {
+    console.log(`KMP-01: connected as ${readyClient.user.tag}`);
+  });
+
+  await client.login(environment.discordToken);
 }
 
-bootstrap();
+void bootstrap().catch((error: unknown) => {
+  console.error("KMP-01 failed to start", error);
+  process.exitCode = 1;
+});
